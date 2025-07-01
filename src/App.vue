@@ -1,10 +1,11 @@
 <script setup>
 import { ref, onMounted } from "vue";
-import { googleTokenLogin } from "vue3-google-login";
+import { googleTokenLogin, googleLogout } from "vue3-google-login";
 import axios from "axios";
 
 const accessToken = ref(localStorage.getItem("accessToken"));
 const profile = ref(JSON.parse(localStorage.getItem("profile")));
+// console.log(profile.value);
 const fetchUserProfile = async (token) => {
   try {
     const res = await axios.get(
@@ -39,6 +40,16 @@ const login = () => {
     localStorage.setItem("accessToken", accessToken.value);
   });
 };
+
+const handleLogout = () => {
+  googleLogout();
+
+  profile.value = null;
+  accessToken.value = null;
+
+  localStorage.removeItem("accessToken");
+  localStorage.removeItem("profile");
+};
 </script>
 
 <template>
@@ -72,6 +83,9 @@ const login = () => {
                     </tr>
                   </tbody>
                 </table>
+                <button class="btn btn-danger" @click="handleLogout">
+                  Log out
+                </button>
               </div>
               <div v-else>
                 <button class="btn btn-primary" @click="login">
@@ -201,6 +215,25 @@ const login = () => {
   border-color: #004085;
 }
 
+.btn-danger {
+  background-color: #dc3545;
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 4px;
+  margin: 1rem auto;
+  padding: 10px 18px;
+  display: block;
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+}
+
+.btn-danger:active {
+  background-color: #bd2130;
+}
+
 @media (max-width: 576px) {
   #profile {
     width: 80px;
@@ -212,6 +245,11 @@ const login = () => {
   }
 
   .btn-primary {
+    width: 100%;
+    padding: 12px;
+  }
+
+  .btn-danger {
     width: 100%;
     padding: 12px;
   }
