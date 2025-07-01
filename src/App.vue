@@ -52,9 +52,9 @@ const login = () => {
           <div class="card-body">
             <div class="text-center">
               <div v-if="profile">
-                <div class="text-center mb-3">
+                <div class="profile text-center mb-3">
                   <img
-                    id="profile"
+                    id="img-profile"
                     :src="profile.picture"
                     class="rounded-circle bg-dark p-2 shadow"
                     alt="User profile"
@@ -121,7 +121,14 @@ const login = () => {
   font-weight: 500;
 }
 
-#profile {
+.profile {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+#img-profile {
   width: 120px;
   height: 120px;
   border-radius: 50%;
@@ -134,7 +141,7 @@ const login = () => {
   margin-bottom: 1rem;
 }
 
-#profile:hover {
+#img-profile:hover {
   transform: scale(1.05);
 }
 
