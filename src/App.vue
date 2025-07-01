@@ -1,7 +1,37 @@
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { googleTokenLogin } from "vue3-google-login";
+import axios from "axios";
+
 const accessToken = ref(localStorage.getItem("accessToken"));
+const profile = ref(JSON.parse(localStorage.getItem("profile")));
+const fetchUserProfile = async (token) => {
+  try {
+    const res = await axios.get(
+      "https://www.googleapis.com/oauth2/v1/userinfo",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+        params: {
+          access_token: token,
+        },
+      }
+    );
+
+    profile.value = res.data;
+    localStorage.setItem("profile", JSON.stringify(res.data));
+  } catch (error) {
+    console.error("Failed to fetch user profile:", error);
+  }
+};
+
+onMounted(() => {
+  if (accessToken.value && !profile.value) {
+    fetchUserProfile(accessToken.value);
+  }
+});
 
 const login = () => {
   googleTokenLogin().then((response) => {
@@ -20,13 +50,34 @@ const login = () => {
             <h5 class="card-title mb-0">Google Login with Vue 3</h5>
           </div>
           <div class="card-body">
-            <div class="alert text-center">
-              <div v-show="accessToken" className="alert alert-success">
-                Login Success.
+            <div class="text-center">
+              <div v-if="profile">
+                <div class="text-center mb-3">
+                  <img
+                    id="profile"
+                    :src="profile.picture"
+                    class="rounded-circle bg-dark p-2 shadow"
+                    alt="User profile"
+                  />
+                </div>
+                <table class="table table-striped table-bordered">
+                  <tbody>
+                    <tr>
+                      <td id="name" class="fw-bold">Full Name</td>
+                      <td>{{ profile.name }}</td>
+                    </tr>
+                    <tr>
+                      <td id="email" class="fw-bold">Email Address</td>
+                      <td>{{ profile.email }}</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
-              <button class="btn btn-primary" @click="login">
-                Login with Google
-              </button>
+              <div v-else>
+                <button class="btn btn-primary" @click="login">
+                  Login with Google
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -37,30 +88,31 @@ const login = () => {
 
 <style scoped>
 .container {
-  margin-top: 2rem;
-  margin-left: 10rem;
-  margin-right: 10rem;
-  padding-left: 10rem;
-  padding-right: 10rem;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f1f1f1;
+  padding: 1rem;
 }
 
 .card {
+  width: 100%;
+  max-width: 500px;
   border-radius: 0.5rem;
   box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
-  margin-left: 10rem;
-  margin-right: 10rem;
+  background-color: white;
 }
 
 .card-header {
   background-color: #f8f9fa;
   border-bottom: 1px solid #c3c3c3;
-  margin-bottom: 2rem;
-  padding-bottom: 4px;
-  padding-left: 6px;
+  padding: 1rem;
+  text-align: center;
 }
 
 .card-body {
-  text-align: center;
+  padding: 1.5rem;
 }
 
 .card-title {
@@ -69,10 +121,62 @@ const login = () => {
   font-weight: 500;
 }
 
-.alert {
+#profile {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #007bff;
+  padding: 5px;
+  background-color: white;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s ease;
   margin-bottom: 1rem;
-  padding: 0.75rem 1.25rem;
-  border-radius: 0.25rem;
+}
+
+#profile:hover {
+  transform: scale(1.05);
+}
+
+#name,
+#email {
+  font-weight: bold;
+  color: #4b0082;
+  font-size: 1rem;
+  padding: 0.5rem;
+}
+
+#name::before {
+  content: "👤 ";
+  margin-right: 0.5rem;
+}
+
+#email::before {
+  content: "✉️ ";
+  margin-right: 0.5rem;
+}
+
+.table {
+  margin-top: 1.5rem;
+  width: 100%;
+}
+
+.table td {
+  padding: 0.75rem;
+  vertical-align: middle;
+  word-break: break-word;
+}
+
+.table-bordered {
+  border: 1px solid #dee2e6;
+}
+
+.table-bordered td {
+  border: 1px solid #dee2e6;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: rgba(0, 0, 0, 0.02);
 }
 
 .btn-primary {
@@ -82,7 +186,7 @@ const login = () => {
   border: none;
   border-radius: 4px;
   margin: 1rem;
-  padding: 8px;
+  padding: 8px 16px;
 }
 
 .btn-primary:hover {
@@ -90,9 +194,24 @@ const login = () => {
   border-color: #004085;
 }
 
-.alert-success {
-  color: #155724;
-  background-color: #d4edda;
-  border-color: #c3e6cb;
+@media (max-width: 576px) {
+  #profile {
+    width: 80px;
+    height: 80px;
+  }
+
+  .card-body {
+    padding: 1rem;
+  }
+
+  .btn-primary {
+    width: 100%;
+    padding: 12px;
+  }
+
+  .table td {
+    font-size: 0.9rem;
+    padding: 0.5rem;
+  }
 }
 </style>
