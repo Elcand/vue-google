@@ -1,30 +1,40 @@
 <script setup>
-import HelloWorld from './components/HelloWorld.vue'
+import { ref } from "vue";
+import { googleTokenLogin } from "vue3-google-login";
+const accessToken = ref(localStorage.getItem("accessToken"));
+
+const login = () => {
+  googleTokenLogin().then((response) => {
+    accessToken.value = response.access_token;
+    localStorage.setItem("accessToken", accessToken.value);
+  });
+};
 </script>
 
 <template>
-  <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="/vite.svg" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://vuejs.org/" target="_blank">
-      <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-    </a>
+  <div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="card border-0 rounded shadow-sm">
+          <div class="card-header">
+            <h5 class="card-title mb-0">Google Login with Vue 3</h5>
+          </div>
+          <div class="card-body">
+            <div class="text-center">
+              <div v-show="accessToken" className="alert alert-success">
+                Login Success.
+              </div>
+              <button class="btn btn-primary" @click="login">
+                Login with Google
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
-  <HelloWorld msg="Vite + Vue" />
 </template>
 
 <style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
-}
+/* Add your styles here if needed */
 </style>
